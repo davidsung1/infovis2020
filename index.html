@@ -15,7 +15,7 @@
     <select name="select2" id="select2"></select>
     <div  style="float: left">
       <div><b>Write Byte Usage per OST Nodes</b></div>
-      <svg id="bar"></svg>
+      <svg id="bar_svg"></svg>
     </div> 
   </body>
 
@@ -47,18 +47,53 @@
 
   <!-- hrchung -->
  <script>
+      var margin = {top: 20, right: 20, bottom:30, left: 20};
+      var barChart = {};
+      
+      barChart.initialize = function () {
+          barChart.svg= d3.select('#bar_svg');
+          barChart.width = 500 - (margin.left + margin.right);
+          barChart.height = 500 -(margin.top + margin.bottom);
+          barChart.ostList = Object.values(barChart.totalOST).map(d=>d['ostID']);
+          barChart.xScale = d3.scaleBand().domain(barChart.ostList).range([0, barChart.width]).padding(0.05);
+          barChart.yMAX = d3.max(barChart.totalOST.map(d => {return d.sum}));
+          //console.log('yMAX : '+barChart.yMAX);
+          barChart.yScale = d3.scaleLinear().domain([0, barChart.yMAX]).range([barChart.height,0]);    
+
+          barChart.xaxis = barChart.svg.append('g').attr('class', "xaxis").attr('transform', "translate("+margin.left+", "+ barChart.height +")").call(d3.axisBottom(barChart.xScale));
+          barChart.yaxis = barChart.svg.append('g').attr('class', "yaxis").attr('transform', "translate("+margin.left+", "+ 0 +")").call(d3.axisLeft(barChart.yScale));
+          barChart.plot = barChart.svg.append('g').attr('width', barChart.width ).attr('height', barChart.height).attr('transfrom', "translate("+margin.left+", "+margin.bottom+")");
+          barChart.rects = barChart.plot.selectAll('g').data(barChart.totalOST, d=>d['ostID']).enter().append('g')
+              .attr("class", d=>d['team'])
+              .each(function(d, i) { 
+                  d3.select(this).selectAll('rect').data(k => { var keys = Object.keys(k); return keys.map(eachKey => [eachKey, k[eachKey]])} , tuple => tuple[1])
+                  .enter()
+                    .append("rect") 
+                    // TODO  : fill color by job ID           
+                    .attr('fill', (sub_d, sub_i) => "rgb("+Math.floor(Math.random()*256)+"," +Math.floor(Math.random()*256)+","+ Math.floor(Math.random()*256)+")")
+                    .attr("width", barChart.xScale.bandwidth())
+                    .attr("height", (sub_d, sub_i) =>{ if(sub_d[0]!='ostID' && sub_d[0] !='sum') { return barChart.height - barChart.yScale(sub_d[1]);} else 0;})
+                    .attr("x", margin.left+barChart.xScale(d.ostID))
+                    .attr("y", (sub_d, sub_i) => {return barChart.yScale(sub_d[1])})
+                    .attr("class", sub_d=>d.ostID)
+                    //.on('mouseover', (event, sub_d) => highlight(d.ostID))
+                    //.on('mouseout', (event, sub_d) => unhighlight(d.ostID))
+              });            
+      };
+     
       function getIntervalJobs(progName, jobID) {
          let q_input = {progName: progName, jobID : jobID}
-         //let q_input = {progName: "cp2k.popt"}
          $.getJSON("/getIntervalJobs", q_input, function (json) {
             var intervalJobs = json;
-            console.log(intervalJobs);
+            //console.log(intervalJobs);
             var totalOST = {};
             intervalJobs.map(row => {var lists = row['ostlist'].split(" ");  lists.map(ost => { if (!(ost in totalOST)) totalOST[ost] = {}; totalOST[ost][row['jobID']] = row['ossWriteMean']; })  });
-            totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['ostID']=e; console.log(totalOST[e]); return totalOST[e]});
+            barChart.totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['sum'] = Object.values(totalOST[e]).reduce((a, b) => a + b, 0); totalOST[e]['ostID']=e; return totalOST[e]});
+            // TODO : sort and select head (50);
+            var displayOST = 10;
+            barChart.totalOST = barChart.totalOST.sort(function(a, b) { return b['sum'] - a['sum'];}).slice(0, displayOST);
             console.log(totalOST);
-
-            //barChart.initialize();
+            barChart.initialize();
         })};
       var progName = "cp2k.popt";
       var jobID = 6477576;

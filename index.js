@@ -55,7 +55,7 @@ app.get('/appendOptions', async (req, res, next) => {
 
 // hrchung 
 app.get('/getIntervalJobs', async (req, res, next) => {
-  //let sql = 'SELECT startTime, endTime FROM More1GApp where progName == "' + req.query.progName+'" AND jobID=='+req.query.jobID;
+  // TODO : change the range of filtering 
   let sql = 'SELECT progName, jobID, startTime, endTime, ossWriteMean, numOST, ostlist FROM More1GApp where startTime <= \
   (SELECT startTime FROM More1GApp where  progName == "' + req.query.progName+'" AND jobID=='+req.query.jobID +') \
   AND endTime >= (SELECT startTime FROM More1GApp where  progName == "' + req.query.progName+'" AND jobID=='+req.query.jobID+')';
@@ -64,7 +64,7 @@ app.get('/getIntervalJobs', async (req, res, next) => {
     if (err) {
       throw err;
     }
-    console.log("[getIntervalJobs] "+rows.length)
+    //console.log("[getIntervalJobs] "+rows.length)
     res.json(rows);
   });
 });
