@@ -7,15 +7,16 @@
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
-
   </head>
   <body>
     <h1>Group D</h1>
     <h2>Infovis2020 Group Project</h2>
     <select name="select1" id="select1"></select>
     <select name="select2" id="select2"></select>
-    <div></div>
-   
+    <div>
+      <div><b>Write Byte Usage per OST Nodes</b></div>
+      <svg id="bar" style="float: left"></svg>
+    </div> 
   </body>
 
   <script>
@@ -43,4 +44,25 @@
 
       $(function() { appendOptions();});
   </script>
+ <script>
+
+      function getIntervalJobs() {
+         //데이터 로드
+         let q_input = {progName: "cp2k.popt", jobID : 6477576}
+         //let q_input = {progName: "cp2k.popt"}
+         $.getJSON("/getIntervalJobs", q_input, function (json) {
+            intervalJobs = json;
+            console.log(intervalJobs);
+            totalOST = []
+            intervalJobs.map(x => {totalOST = totalOST.concat(x['ostlist'].split(" "))});
+            totalOST = [...new Set(totalOST)];
+            totalOST.sort(function(a, b) { // 오름차순
+                return a - b;
+            });
+            console.log(totalOST);
+            //barChart.initialize();
+        })};
+     
+      $(function() {  getIntervalJobs();});
+ </script>
 </html>

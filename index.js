@@ -1,5 +1,6 @@
 var express = require('express');
 var Promise = require("bluebird");
+const { OPEN_READWRITE } = require('sqlite3');
 
 
 const sqlite3 = require('sqlite3').verbose();
@@ -51,3 +52,25 @@ app.get('/appendOptions', async (req, res, next) => {
     res.json(rows);
   });
 });
+
+// hrchung 
+app.get('/getIntervalJobs', async (req, res, next) => {
+  //let sql = 'SELECT startTime, endTime FROM More1GApp where progName == "' + req.query.progName+'" AND jobID=='+req.query.jobID;
+  let sql = 'SELECT progName, jobID, startTime, endTime, ossWriteMean, numOST, ostlist FROM More1GApp where startTime <= \
+  (SELECT startTime FROM More1GApp where  progName == "' + req.query.progName+'" AND jobID=='+req.query.jobID +') \
+  AND endTime >= (SELECT startTime FROM More1GApp where  progName == "' + req.query.progName+'" AND jobID=='+req.query.jobID+')';
+
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      throw err;
+    }
+    /*
+    rows.forEach((row) => {
+      console.log(row);
+    });
+    */
+    console.log("[getIntervalJobs] "+rows.length)
+    res.json(rows);
+  });
+});
+
