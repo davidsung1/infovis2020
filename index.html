@@ -12,7 +12,9 @@
   <body>
     <h1>Group D</h1>
     <h2>Infovis2020 Group Project</h2>
-    <select name="select1" id="select1"></select>
+    <select name="select1" id="select1">
+      <option value="pw.x">pw.x</option>
+    </select>
     <select name="select2" id="select2"></select>
     <div></div>
    
@@ -22,7 +24,8 @@
       let dataArr;
       function getData() {
           console.log("going to be db data")
-        $.getJSON("/getData", function (json) {
+          let progName = {progName: "pw.x"}
+        $.getJSON("/getData", progName, function (json) {
             console.log("hi");
             console.log(json);
         });
