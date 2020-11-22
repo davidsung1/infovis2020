@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+  </head>
+  <body>
+    <h1>Group D</h1>
+    <h2>Infovis2020 Group Project</h2>
+    <select name="select1" id="select1"></select>
+    <select name="select2" id="select2"></select>
+    <div></div>
+   
+  </body>
+
+  <script>
+      let dataArr;
+      function getData() {
+          console.log("going to be db data")
+        $.getJSON("/getData", function (json) {
+            console.log("hi");
+            console.log(json);
+        });
+      }
+
+      getData();
+  </script>
+</html>

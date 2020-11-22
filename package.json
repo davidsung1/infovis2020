@@ -1,0 +1,27 @@
+{
+  "name": "infovis2020",
+  "version": "1.0.0",
+  "description": "group D",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidsung1/infovis2020.git"
+  },
+  "author": "dk",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/davidsung1/infovis2020/issues"
+  },
+  "homepage": "https://github.com/davidsung1/infovis2020#readme",
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "ejs": "^3.1.5",
+    "express": "^4.17.1",
+    "get-json": "^1.0.1",
+    "sqlite": "^4.0.17",
+    "sqlite3": "^5.0.0"
+  }
+}
