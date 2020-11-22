@@ -37,3 +37,17 @@ app.get('/getData', async (req, res, next) => {
     res.json(rows);
   });
 });
+
+app.get('/appendOptions', async (req, res, next) => {
+  let sql = "SELECT progName, COUNT(*) AS 'num' FROM More1GApp GROUP BY progName HAVING COUNT(*) > 80 ORDER BY COUNT(*) DESC;";
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      throw err;
+    }
+    rows.forEach((row) => {
+      console.log(row.progName);
+    });
+    console.log(rows.length)
+    res.json(rows);
+  });
+});
