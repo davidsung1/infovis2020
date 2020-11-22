@@ -22,6 +22,18 @@
 
   <script>
       let dataArr;
+      function appendOptions() {
+        console.log("going to append option to select1");
+        $.getJSON("/appendOptions", function(json) {
+          json.forEach((row) => {
+            d3.select("#select1")
+              .append("option")
+              .property('value', row.progName)
+              .text(row.progName);
+          });
+        });
+      }
+
       function getData() {
           console.log("going to be db data")
           let progName = {progName: "pw.x"}
@@ -31,6 +43,7 @@
         });
       }
 
-      getData();
+      // getData();
+      appendOptions();
   </script>
 </html>
