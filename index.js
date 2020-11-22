@@ -64,11 +64,6 @@ app.get('/getIntervalJobs', async (req, res, next) => {
     if (err) {
       throw err;
     }
-    /*
-    rows.forEach((row) => {
-      console.log(row);
-    });
-    */
     console.log("[getIntervalJobs] "+rows.length)
     res.json(rows);
   });

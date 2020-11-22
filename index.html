@@ -13,9 +13,9 @@
     <h2>Infovis2020 Group Project</h2>
     <select name="select1" id="select1"></select>
     <select name="select2" id="select2"></select>
-    <div>
+    <div  style="float: left">
       <div><b>Write Byte Usage per OST Nodes</b></div>
-      <svg id="bar" style="float: left"></svg>
+      <svg id="bar"></svg>
     </div> 
   </body>
 
@@ -44,25 +44,24 @@
 
       $(function() { appendOptions();});
   </script>
- <script>
 
-      function getIntervalJobs() {
-         //데이터 로드
-         let q_input = {progName: "cp2k.popt", jobID : 6477576}
+  <!-- hrchung -->
+ <script>
+      function getIntervalJobs(progName, jobID) {
+         let q_input = {progName: progName, jobID : jobID}
          //let q_input = {progName: "cp2k.popt"}
          $.getJSON("/getIntervalJobs", q_input, function (json) {
-            intervalJobs = json;
+            var intervalJobs = json;
             console.log(intervalJobs);
-            totalOST = []
-            intervalJobs.map(x => {totalOST = totalOST.concat(x['ostlist'].split(" "))});
-            totalOST = [...new Set(totalOST)];
-            totalOST.sort(function(a, b) { // 오름차순
-                return a - b;
-            });
+            var totalOST = {};
+            intervalJobs.map(row => {var lists = row['ostlist'].split(" ");  lists.map(ost => { if (!(ost in totalOST)) totalOST[ost] = {}; totalOST[ost][row['jobID']] = row['ossWriteMean']; })  });
+            totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['ostID']=e; console.log(totalOST[e]); return totalOST[e]});
             console.log(totalOST);
+
             //barChart.initialize();
         })};
-     
-      $(function() {  getIntervalJobs();});
+      var progName = "cp2k.popt";
+      var jobID = 6477576;
+      $(function() {  getIntervalJobs(progName, jobID);});
  </script>
 </html>
