@@ -51,7 +51,7 @@
       var barChart = {};
       
       barChart.initialize = function () {
-          barChart.svg= d3.select('#bar_svg');
+          barChart.svg= d3.select('#bar_svg').attr('width', 500).attr('height', 500);
           barChart.width = 500 - (margin.left + margin.right);
           barChart.height = 500 -(margin.top + margin.bottom);
           barChart.ostList = Object.values(barChart.totalOST).map(d=>d['ostID']);
@@ -87,7 +87,9 @@
             var intervalJobs = json;
             //console.log(intervalJobs);
             var totalOST = {};
-            intervalJobs.map(row => {var lists = row['ostlist'].split(" ");  lists.map(ost => { if (!(ost in totalOST)) totalOST[ost] = {}; totalOST[ost][row['jobID']] = row['ossWriteMean']; })  });
+            intervalJobs.map(row=> {if(row['jobID']==q_input.jobID) {var lists = row['ostlist'].split(" "); lists.map(ost => totalOST[ost] = {})} });
+            intervalJobs.filter(item => item['numOST'] > 1);
+            intervalJobs.map(row => {var lists = row['ostlist'].split(" ");  lists.map(ost => { if (ost in totalOST) totalOST[ost][row['jobID']] = row['ossWriteMean']/row['numOST']; })  });
             barChart.totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['sum'] = Object.values(totalOST[e]).reduce((a, b) => a + b, 0); totalOST[e]['ostID']=e; return totalOST[e]});
             // TODO : sort and select head (50);
             var displayOST = 10;
