@@ -76,11 +76,47 @@
                     .attr("x", margin.left+barChart.xScale(d.ostID))
                     .attr("y", (sub_d, sub_i) => {return barChart.yScale(sub_d[1])})
                     .attr("class", sub_d=>d.ostID)
+                    //.attr("text", sub_d => {if(sub_d[0]!='ostID' && sub_d[0] !='sum') return sub_d[0]+"/"+sub_d[1]})
                     //.on('mouseover', (event, sub_d) => highlight(d.ostID))
                     //.on('mouseout', (event, sub_d) => unhighlight(d.ostID))
               });            
       };
-     
+
+      barChart.update = function () {
+          barChart.ostList = Object.values(barChart.totalOST).map(d=>d['ostID']);
+          barChart.xScale = d3.scaleBand().domain(barChart.ostList).range([0, barChart.width]).padding(0.05);
+          barChart.yMAX = d3.max(barChart.totalOST.map(d => {return d.sum}));
+          barChart.yScale = d3.scaleLinear().domain([0, barChart.yMAX]).range([barChart.height,0]);    
+
+          barChart.xaxis.attr('transform', "translate("+margin.left+", "+ barChart.height +")").call(d3.axisBottom(barChart.xScale));
+          barChart.yaxis.attr('transform', "translate("+margin.left+", "+ 0 +")").call(d3.axisLeft(barChart.yScale));
+          //barChart.plot = barChart.svg.append('g').attr('width', barChart.width ).attr('height', barChart.height).attr('transfrom', "translate("+margin.left+", "+margin.bottom+")");
+          barChart.rects = barChart.plot.selectAll('g').data(barChart.totalOST, d=>d['ostID']).enter().append('g')
+              .attr("class", d=>d['team'])
+              .each(function(d, i) { 
+                  d3.select(this).selectAll('rect').data(k => { var keys = Object.keys(k); return keys.map(eachKey => [eachKey, k[eachKey]])} , tuple => tuple[1])
+                  .enter()
+                    .append("rect") 
+                    // TODO  : fill color by job ID           
+                    .attr('fill', (sub_d, sub_i) => "rgb("+Math.floor(Math.random()*256)+"," +Math.floor(Math.random()*256)+","+ Math.floor(Math.random()*256)+")")
+                    .attr("width", barChart.xScale.bandwidth())
+                    .attr("height", (sub_d, sub_i) =>{ if(sub_d[0]!='ostID' && sub_d[0] !='sum') { return barChart.height - barChart.yScale(sub_d[1]);} else 0;})
+                    .attr("x", margin.left+barChart.xScale(d.ostID))
+                    .attr("y", (sub_d, sub_i) => {return barChart.yScale(sub_d[1])})
+                    .attr("class", sub_d=>d.ostID)
+                  .update()
+                    .attr("width", barChart.xScale.bandwidth())
+                    .attr("height", (sub_d, sub_i) =>{ if(sub_d[0]!='ostID' && sub_d[0] !='sum') { return barChart.height - barChart.yScale(sub_d[1]);} else 0;})
+                    .attr("x", margin.left+barChart.xScale(d.ostID))
+                    .attr("y", (sub_d, sub_i) => {return barChart.yScale(sub_d[1])})
+                  .exit()
+                    .remove()
+                    //.attr("text", sub_d => {if(sub_d[0]!='ostID' && sub_d[0] !='sum') return sub_d[0]+"/"+sub_d[1]})
+                    //.on('mouseover', (event, sub_d) => highlight(d.ostID))
+                    //.on('mouseout', (event, sub_d) => unhighlight(d.ostID))
+              });            
+      };
+
       function getIntervalJobs(progName, jobID) {
          let q_input = {progName: progName, jobID : jobID}
          $.getJSON("/getIntervalJobs", q_input, function (json) {
@@ -89,16 +125,18 @@
             var totalOST = {};
             intervalJobs.map(row=> {if(row['jobID']==q_input.jobID) {var lists = row['ostlist'].split(" "); lists.map(ost => totalOST[ost] = {})} });
             intervalJobs.filter(item => item['numOST'] > 1);
-            intervalJobs.map(row => {var lists = row['ostlist'].split(" ");  lists.map(ost => { if (ost in totalOST) totalOST[ost][row['jobID']] = row['ossWriteMean']/row['numOST']; })  });
+            intervalJobs.map(row => {var lists = row['ostlist'].split(" ");  lists.map(ost => { if (ost in totalOST) totalOST[ost][row['jobID']] = row['writeBytesTotal']/row['numOST']; })  });
             barChart.totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['sum'] = Object.values(totalOST[e]).reduce((a, b) => a + b, 0); totalOST[e]['ostID']=e; return totalOST[e]});
             // TODO : sort and select head (50);
+
             var displayOST = 10;
             barChart.totalOST = barChart.totalOST.sort(function(a, b) { return b['sum'] - a['sum'];}).slice(0, displayOST);
             console.log(totalOST);
             barChart.initialize();
         })};
-      var progName = "cp2k.popt";
-      var jobID = 6477576;
+      var progName = "pw.x";
+      var jobID = 7408783;
+
       $(function() {  getIntervalJobs(progName, jobID);});
  </script>
 </html>
