@@ -72,9 +72,9 @@
                     // TODO  : fill color by job ID           
                     .attr('fill', (sub_d, sub_i) => "rgb("+Math.floor(Math.random()*256)+"," +Math.floor(Math.random()*256)+","+ Math.floor(Math.random()*256)+")")
                     .attr("width", barChart.xScale.bandwidth())
-                    .attr("height", (sub_d, sub_i) =>{ if(sub_d[0]!='ostID' && sub_d[0] !='sum') { return barChart.height - barChart.yScale(sub_d[1]);} else 0;})
+                    .attr("height", (sub_d, sub_i) =>{ if(sub_d[0]!='ostID' && sub_d[0] !='sum') { return barChart.height - barChart.yScale(sub_d[1][0]);} else 0;})
                     .attr("x", margin.left+barChart.xScale(d.ostID))
-                    .attr("y", (sub_d, sub_i) => {return barChart.yScale(sub_d[1])})
+                    .attr("y", (sub_d, sub_i) => {if(sub_d[0]!='ostID' && sub_d[0] !='sum') return barChart.yScale(sub_d[1][1])})
                     .attr("class", sub_d=>d.ostID)
                     //.attr("text", sub_d => {if(sub_d[0]!='ostID' && sub_d[0] !='sum') return sub_d[0]+"/"+sub_d[1]})
                     //.on('mouseover', (event, sub_d) => highlight(d.ostID))
@@ -125,9 +125,10 @@
             var totalOST = {};
             intervalJobs.map(row=> {if(row['jobID']==q_input.jobID) {var lists = row['ostlist'].split(" "); lists.map(ost => totalOST[ost] = {})} });
             intervalJobs.filter(item => item['numOST'] > 1);
-            intervalJobs.map(row => {var lists = row['ostlist'].split(" ");  lists.map(ost => { if (ost in totalOST) totalOST[ost][row['jobID']] = row['writeBytesTotal']/row['numOST']; })  });
-            barChart.totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['sum'] = Object.values(totalOST[e]).reduce((a, b) => a + b, 0); totalOST[e]['ostID']=e; return totalOST[e]});
+            intervalJobs.map(row => {var lists = row['ostlist'].split(" ");  lists.map(ost => { if (ost in totalOST) totalOST[ost][row['jobID']] = [row['writeBytesTotal']/row['numOST'], -1]; })  });
+            //barChart.totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['sum'] = Object.values(totalOST[e]).reduce((a, b) => a + b, 0); totalOST[e]['ostID']=e; return totalOST[e]});
             // TODO : sort and select head (50);
+            barChart.totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['sum'] = Object.keys(totalOST[e]).reduce( (sum,key) => { var curr_sum = sum+totalOST[e][key][0]; totalOST[e][key][1]=curr_sum; return curr_sum},0); totalOST[e]['ostID']=e;  return totalOST[e]});
 
             var displayOST = 10;
             barChart.totalOST = barChart.totalOST.sort(function(a, b) { return b['sum'] - a['sum'];}).slice(0, displayOST);
