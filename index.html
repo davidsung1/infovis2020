@@ -2,45 +2,381 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title></title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>HPC I/O Visualization for Optimization</title>
+    <link href="/startbootstrap-sb-admin-2-gh-pages/css/sb-admin-2.min.css" rel="stylesheet">
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="static/comm.js"></script>
+    <style>
+      .topInfoBar {
+        position: relative;
+      }
 
+      #historyButton {
+        /* position: relative;
+        float: right; */
+        position: absolute;
+        right: 10px;
+        top: 0px;
+      }
+
+      table {
+        /* font-family: arial, sans-serif; */
+        border-collapse: collapse;
+        width: 100%;
+      }
+      td, th {
+        border: 1px solid #dddddd;
+        text-align: center;
+        padding: 8px;
+      }
+
+      .tableClicked {
+        background-color: #dddddd;
+      }
+
+      .appinfo {
+        height: 250px;
+      }
+
+      .scatter {
+        height: 350px;
+      }
+
+      .cardOfMDS {
+        height: 350px;
+      }
+
+      .cardofOST {
+        height: 400px;
+      }
+
+      .cardofHeatmap {
+        height: 500px;
+      }
+
+      #OSTGraph {
+        overflow-y: scroll;
+      }
+
+      .center {
+        margin: auto;
+        text-align: center;
+        /* border: 3px solid green; */
+      }
+
+      .card .blur { 
+        -webkit-filter: blur(3px); 
+        -moz-filter: blur(3px); 
+        -o-filter: blur(3px); 
+        -ms-filter: blur(3px); 
+        filter: blur(3px); 
+      } 
+
+      .warning {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: red;
+        font-weight: bold;
+        /* z-index: 5; */
+        /* -webkit-filter:'none';
+        -moz-filter:'none';
+        -o-filter:'none';
+        -ms-filter:'none';
+        filter:'none'; */
+      }
+
+      #appInfo {
+        font-size: 12px;
+        padding: 1px;
+        overflow: scroll;
+      }
+
+      #historyModalBody {
+        overflow: scroll;
+        height: 400px;
+      }
+
+    </style>
   </head>
-  <body>
-    <h1>Group D</h1>
-    <h2>Infovis2020 Group Project</h2>
-    <select name="select1" id="select1"></select>
-    <select name="select2" id="select2"></select>
-    <div></div>
-   
+  <body id="page-top">
+    <div id="wrapper">
+      <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+          <nav class="navbar navbar-expand navbar-light bg-light topbar mb-4 static-top shadow">
+            <h1>HPC I/O Visualization for Management and Optimization</h1>
+          </nav>
+          <div class="container-fluid">
+            <div class="row topInfoBar">
+              <p>App Name: <select name="select1" id="select1"><option value="default">Select..</option></select></p>
+              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#historyModal" id="historyButton">
+                History
+              </button>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-xl-12 center">
+                <div class="card shadow mb-4 appinfo">
+                  <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Application I/O Information</h6>
+                  </div>
+                  <div class="card-body" id="appInfo">
+                    <table id="appInfoTable">
+                      <tr id="appInfoHead">
+                        <th>App Name</th>
+                        <th>Job ID</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>runtime(in seconds)</th>
+                        <th># of OST</th>
+                        <th># of process</th>
+                        <th>Total # Files</th>
+                        <th>Total # Write Request</th>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xl-3"> <!-- part for info list and scatter plot -->
+                <div class="card shadow mb-4 scatter">
+                  <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Throughput vs Bytes Total</h6>
+                  </div>
+                  <div class="card-body">
+                    <!-- <hr> -->
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-9"> <!-- part for OST and MDS graphs -->
+                <div class="card shadow mb-4 cardOfMDS">
+                  <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">MDS</h6>
+                  </div>
+                  <div class="card-body" id="MDSGraph">
+                    <!-- <hr> -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-xl-12">
+                <div class="card shadow mb-4 cardofOST">
+                  <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">OST</h6>
+                  </div>
+                  <div class="card-body" id="OSTGraph">
+
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xl-5">
+                <div class="card shadow mb-4 cardofHeatmap">
+                  <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">HeatMap</h6>
+                  </div>
+                  <div class="card-body" id="heatMapBody">
+                    <!-- <hr> -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div> <!-- end of content fluid -->
+        </div> <!-- content (actualy content here) -->
+      </div> <!-- content wrapper -->
+      <div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">History</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body" id="historyModalBody">
+              <table id="historyTable">
+                <tr id="historyHead">
+                  <th></th>
+                  <th>App Name</th>
+                  <th>Job ID</th>
+                  <th>Start</th>
+                  <th>End</th>
+                </tr>
+              </table>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" id="clearHistory">Clear history</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    
   </body>
 
   <script>
       let dataArr;
-      function appendOptions() {
-        console.log("going to append option to select1");
-        $.getJSON("/appendOptions", function(json) {
-          json.forEach((row) => {
-            d3.select("#select1")
-              .append("option")
-              .property('value', row.progName)
-              .text(row.progName);
-          });
-        });
-      }
+      let appTable;
+      let appInfoArr = new Array();
+      let appInfo;
+      let historyTable;
+      let MDSsvg;
+      MDSsvg = d3.select("#MDSGraph")
+                    .append("svg")
+                    .attr("id", "line")
+                    .attr("width", 1200)
+                    .attr("height", 300);
+      let OSTsvg;
+      let MDSxAxisVar = MDSsvg
+                          .append('g')
+                          .attr('id', "MDSxAxis");
+      let MDSyAxisLVar = MDSsvg
+                          .append('g')
+                          .attr('id', "MDSyAxisL");
+      let MDSyAxisRVar = MDSsvg
+                          .append('g')
+                          .attr('id', "MDSyAxisR");
 
-      function getData() {
-          console.log("going to be db data")
-          let progName = {progName: "pw.x"}
-        $.getJSON("/getData", progName, function (json) {
-            console.log("hi");
-            console.log(json);
-        });
-      }
+      let MDSxAxis, MDSyAxisL, MDSyAxisR;
+      let legendEnter = MDSsvg.append("g")
+                        .attr("class", "legend")
+                        .attr("id", "MDSLegend")
+                        .attr("transform", `translate(970, 10)`)
+                        .append("rect")
+                          .attr("width", 100)
+                          .attr("height", 50)
+                          .attr("fill", "#eeeeee")
+                          .attr("fill-opacity", 0.5);
+      let MDSlines;
+      let MDSYaxisLTitle = MDSsvg
+                            .append('g')
+                            .attr('id', 'MDSYaxisLTitle');
 
-      $(function() { appendOptions();});
+      let MDSYaxisRTitle = MDSsvg
+                            .append('g')
+                            .attr('id', 'MDSYaxisRTitle');
+
+      //hrchung
+      let margin = {top: 20, right: 20, bottom:30, left: 20};
+      let barChart = {};
+      barChart.width = 1900;
+      barChart.height = 280;
+      barChart.svg = d3.select('#OSTGraph')
+                            .append('svg')
+                            .attr('id', 'ostbar')
+                            .attr('width', 2000)
+                            .attr('height', 300);
+      barChart.xaxis = barChart.svg
+                        .append('g')
+                        .attr('id', "OSTxAxis");
+      barChart.yaxis = barChart.svg
+                        .append('g')
+                        .attr('id', "OSTyAxis");
+      barChart.plot = barChart.svg
+                        .append('g')
+                        .attr('width', barChart.width )
+                        .attr('height', barChart.height)
+                        .attr('transfrom', "translate(0, 0)");
+
+
+      //heatmap
+      let heatMap = {};
+      heatMap.width = 450 - margin.left - margin.right,
+      heatMap.height = 450 - margin.top - margin.bottom;
+
+      heatMap.svg = d3.select("#heatMapBody")
+                    .append("svg")
+                    .attr("width", heatMap.width + margin.left + margin.right)
+                    .attr("height", heatMap.height + margin.top + margin.bottom)
+                      // .append("g")
+                      //   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      let myGroups = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+      let myVars = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10"];
+
+      let HTxAxis, HTyAxis;
+      let HTxAxisVar = heatMap.svg.append('g').attr('id', 'HTxAxis');
+      let HTyAxisVar = heatMap.svg.append('g').attr('id', 'HTyAxis');
+        
+
+      
+      // getMDSData(6477575); //this one
+      getMDSData(7268416);
+      // $("#btnbaby").click(function () {
+      //   getMDSData(7583469);
+      //   d3.select("#MDSGraph").classed("blur", true);
+      //   d3.select(".cardOfMDS").append("p").text("NOT VALID").classed("warning", true);
+      //   // d3.select(".cardOfMDS").append("p").text("Click dot in scatter plot").classed("warning", true);
+      // });
+
+      // function barCreate() {
+      //   barChart.ostList = Object.values(barChart.totalOST).map(d=>d['ostID']);
+      //   // console.log(barChart.ostlist);
+      //   barChart.xScale = d3.scaleBand().domain(barChart.ostList).range([50, barChart.width+50]).padding(0.05);
+      //   barChart.yMAX = d3.max(barChart.totalOST.map(d => {return d.sum}));
+      //   barChart.yScale = d3.scaleLinear().domain([0, barChart.yMAX]).range([barChart.height,10]);    
+
+      //   barChart.xaxis.attr('transform', "translate(0, "+ barChart.height +")").call(d3.axisBottom(barChart.xScale));
+      //   barChart.yaxis.attr('transform', "translate(50, 0)").call(d3.axisLeft(barChart.yScale));
+      //   barChart.rects = barChart.plot.selectAll('g').data(barChart.totalOST, d=>d['ostID']).join('g')
+      //         .attr("class", d=>d['team'])
+      //         .each(function(d, i) { 
+      //             d3.select(this).selectAll('rect').data(k => { var keys = Object.keys(k); return keys.map(eachKey => [eachKey, k[eachKey]])} , tuple => tuple[1])
+      //             .join('rect')
+      //               .attr('fill', (sub_d, sub_i) => "rgb("+Math.floor(Math.random()*256)+"," +Math.floor(Math.random()*256)+","+ Math.floor(Math.random()*256)+")")
+      //               .attr("width", barChart.xScale.bandwidth()-40)
+      //               .attr("height", (sub_d, sub_i) =>{ if(sub_d[0]!='ostID' && sub_d[0] !='sum') { return barChart.height - barChart.yScale(sub_d[1][0]);} else 0;})
+      //               .attr("x", margin.left+barChart.xScale(d.ostID))
+      //               .attr("y", (sub_d, sub_i) => {if(sub_d[0]!='ostID' && sub_d[0] !='sum') return barChart.yScale(sub_d[1][1])})
+      //               .attr("class", sub_d=>d.ostID)
+      //               //.attr("text", sub_d => {if(sub_d[0]!='ostID' && sub_d[0] !='sum') return sub_d[0]+"/"+sub_d[1]})
+      //               //.on('mouseover', (event, sub_d) => highlight(d.ostID))
+      //               //.on('mouseout', (event, sub_d) => unhighlight(d.ostID))
+      //         });  
+      // }
+
+      // function getIntervalJobs(progName, jobID) {
+      //    let q_input = {progName: progName, jobID : jobID}
+      //    $.getJSON("/getIntervalJobs", q_input, function (json) {
+      //       var intervalJobs = json;
+      //       //console.log(intervalJobs);
+      //       var totalOST = {};
+      //       intervalJobs.map(row=> {if(row['jobID']==q_input.jobID) {var lists = row['ostlist'].split(" "); lists.map(ost => totalOST[ost] = {})} });
+      //       intervalJobs.filter(item => item['numOST'] > 1);
+      //       intervalJobs.map(row => {var lists = row['ostlist'].split(" ");  lists.map(ost => { if (ost in totalOST) totalOST[ost][row['jobID']] = [row['writeBytesTotal']/row['numOST'], -1]; })  });
+      //       //barChart.totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['sum'] = Object.values(totalOST[e]).reduce((a, b) => a + b, 0); totalOST[e]['ostID']=e; return totalOST[e]});
+      //       // TODO : sort and select head (50);
+      //       barChart.totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['sum'] = Object.keys(totalOST[e]).reduce( (sum,key) => { var curr_sum = sum+totalOST[e][key][0]; totalOST[e][key][1]=curr_sum; return curr_sum},0); totalOST[e]['ostID']=e;  return totalOST[e]});
+
+      //       var displayOST = 10;
+      //       barChart.totalOST = barChart.totalOST.sort(function(a, b) { return b['sum'] - a['sum'];}).slice(0, displayOST);
+      //       console.log(totalOST);
+      //       // barChart.initialize();
+      //       barCreate();
+      //   });
+      // };
+
+      // getIntervalJobs("pw.x", 7408783);
+      // getIntervalJobs(7408783);//original use this
+      getIntervalJobs(7268416);
+      // $("#btnbaby").click(function () {
+      //   getIntervalJobs(7583469)
+      //   // d3.select("#MDSGraph").classed("blur", true);
+      //   // d3.select(".cardOfMDS").append("p").text("NOT VALID").classed("warning", true);
+      //   // d3.select(".cardOfMDS").append("p").text("Click dot in scatter plot").classed("warning", true);
+      // });    
+      makeHeatmap(7268416);
+
+
   </script>
 </html>
