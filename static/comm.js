@@ -195,10 +195,10 @@ function getAppInfo(progName) {
       //show ost graph for the app instance
       getIntervalJobs(jid);
 
+      getJobUsage(jid);
+
       //try
       // makeHeatmap();
-      //show ratio by ...job type??
-      getJobUsage(jid);
     });
    
   });
@@ -282,27 +282,97 @@ function barCreate(origJobID, lenOSTList) {
 }
 
 //hrchung
+
+function radarCreate(data) {
+
+  radar.radicalScale = d3.scaleLinear().domain([0, 100]).range([0, 180]);
+  radar.ticks = [];
+  for(i=0; i<= 100; i+=20) radar.ticks.push(i);
+  radar.ticks.forEach(t =>
+    radar.svg.append("circle")
+    .attr("cx", 180)
+    .attr("cy", 180)
+    .attr("fill", "none")
+    .attr("stroke", "lightgray")
+    .attr("r", radar.radicalScale(t))
+    );
+  radar.ticks.forEach(t =>
+    radar.svg.append("text")
+      .attr("x", 200)
+      .attr("y", 180 - radar.radicalScale(t))
+      .text(t.toString())
+  );
+
+  function angleToCoordinate(angle, value){
+    let x = Math.cos(angle) * radar.radicalScale(value);
+    let y = Math.sin(angle) * radar.radicalScale(value);
+    return {"x": 180 + x, "y": 180 - y};
+  }
+  radar.features = Object.keys(data[0]);
+  for (var i = 0; i < radar.features.length; i++) {
+    let ft_name = radar.features[i];
+    let angle = (Math.PI / 2) + (2 * Math.PI * i / radar.features.length);
+    let line_coordinate = angleToCoordinate(angle, 100);
+    let label_coordinate = angleToCoordinate(angle, 100.5);
+
+    //draw axis line
+    radar.svg.append("line")
+    .attr("x1", 180)
+    .attr("y1", 180)
+    .attr("x2", line_coordinate.x)
+    .attr("y2", line_coordinate.y)
+    .attr("stroke","black");
+
+    //draw axis label
+    radar.svg.append("text")
+    .attr("x", label_coordinate.x)
+    .attr("y", label_coordinate.y)
+    .text(ft_name);
+  } 
+  
+  radar.line = d3.line()
+    .x(d => d.x)
+    .y(d => d.y);
+  radar.colors = ["darkorange", "gray", "navy"];
+  function getPathCoordinates(data_point){
+    let coordinates = [];
+    for (var i = 0; i < radar.features.length; i++){
+        let ft_name = radar.features[i];
+        let angle = (Math.PI / 2) + (2 * Math.PI * i / radar.features.length);
+        coordinates.push(angleToCoordinate(angle, data_point[ft_name]));
+    }
+    return coordinates;
+  }
+  for (var i = 0; i < data.length; i ++){
+    let d = data[i];
+    let color = radar.colors[i];
+    let coordinates = getPathCoordinates(d);
+
+    //draw the path element
+    radar.svg.append("path")
+    .datum(coordinates)
+    .attr("d",radar.line)
+    .attr("stroke-width", 3)
+    .attr("stroke", color)
+    .attr("fill", color)
+    .attr("stroke-opacity", 1)
+    .attr("opacity", 0.5);
+  } 
+}
+
+
+
 function getJobUsage(jobID) {
   let q_input = {jobID : jobID}
   $.getJSON("/getJobInfo", q_input, function (json) {
-    //console.log(json);
+    Object.keys(json[0]).map(key => {if(json[0][key] < 0) json[0][key]=0;});
     var json = json[0];
-    /*
-writeBytesMPIIO: 0
-writeBytesPOSIX: 0
-writeBytesSTDIO: 7247.763271
-writeRateMPIIO: 0
-writeRatePOSIX: 1154.724061
-writeRateSTDIO: 136.332645497
-writeTimeMPIIO: 0
-writeTimePOSIX: -856.670062
-writeTimeSTDIO: 53.162346
-    */
+    
    var totalWriteBytes = json['writeBytesMPIIO'] + json['writeBytesPOSIX'] + json['writeBytesSTDIO'];
    var totalWriteRate = json['writeRateMPIIO'] + json['writeRatePOSIX'] + json['writeRateSTDIO'];
    var totalWriteTime = json['writeTimeMPIIO'] + json['writeTimePOSIX'] + json['writeTimeSTDIO'];
    var bytes = {};
-   bytes['MPIIO']  = json['writeBytesMPIIO']*100/totalWriteBytes;
+   bytes['MPIIO']  = json['writeBytesMPIIO']*100/totalWriteBytes; 
    bytes['POSIX'] =  json['writeBytesPOSIX']*100/totalWriteBytes;
    bytes['STDIO'] = json['writeBytesSTDIO']*100/totalWriteBytes;
    var rates = {};
@@ -314,9 +384,9 @@ writeTimeSTDIO: 53.162346
    times['POSIX'] = json['writeTimePOSIX']*100/totalWriteTime;
    times['STDIO'] = json['writeTimeSTDIO']*100/totalWriteTime;
    var data = [bytes, rates, times];
-   console.log(data);
-
-  });
+   //console.log(data);
+   radarCreate(data);
+  }); // <- json
 }
 
 
