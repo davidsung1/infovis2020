@@ -14,7 +14,7 @@ $(function() { //functions to be called on load of html
 
 
 function appendOptions() {
-  console.log("going to append option to select1");
+  //console.log("going to append option to select1");
   $.getJSON("/appendOptions", function(json) {
     json.forEach((row) => {
       d3.select("#select1")
@@ -28,17 +28,17 @@ function appendOptions() {
 }
 
 function getData() {
-    console.log("going to be db data")
+    //console.log("going to be db data")
     let progName = {progName: "pw.x"}
   $.getJSON("/getData", progName, function (json) {
-      console.log("hi");
-      console.log(json);
+      //console.log("hi");
+      //console.log(json);
   });
 }
 
 
 function getMDSData(jid) {
-  console.log("going to be MDS data")
+  //console.log("going to be MDS data")
   let jobID = {jobID: jid}
   $.getJSON("/getMDS", jobID, function (data) {
       // console.log(data);
@@ -174,12 +174,12 @@ function getAppInfo(progName) {
               d3.select(this).append("td").text(d => d.totalWriteReq);
             });
     
-    console.log("app info appending for "+progName+" is done");
+    //console.log("app info appending for "+progName+" is done");
 
     $("tr.appInfoContent").click(function () {
       let jid = $(this).attr('id');
 
-      console.log("app info clicked "+$(this).attr('id'));
+     // console.log("app info clicked "+$(this).attr('id'));
 
       d3.selectAll('tr.appInfoContent').classed('tableClicked', false);
       d3.select(this).node().classList.add("tableClicked")
@@ -197,13 +197,15 @@ function getAppInfo(progName) {
 
       //try
       // makeHeatmap();
+      //show ratio by ...job type??
+      getJobUsage(jid);
     });
    
   });
 }
 
 function appendHistory(data) {
-  console.log("entering append history");
+  //console.log("entering append history");
 
   historyTable = d3.select("#historyTable");
   historyTable = historyTable.append('tr').attr("class", "historyContent");
@@ -232,21 +234,17 @@ function getIntervalJobs(jobID) {
     var totalOST = {};
     var lists;
     intervalJobs.map(row => {if(row['jobID']==q_input.jobID) { lists = row['ostlist'].split(" "); lists.map(ost => totalOST[ost] = {})} });
-    console.log(lists);
+    //console.log(lists);
     intervalJobs = intervalJobs.filter(item => item['numOST'] > 1);
     intervalJobs.map(row => {var lists = row['ostlist'].split(" ");  lists.map(ost => { if (ost in totalOST) totalOST[ost][row['jobID']] = [row['writeBytesTotal']/row['numOST'], -1]; })  });
     //barChart.totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['sum'] = Object.values(totalOST[e]).reduce((a, b) => a + b, 0); totalOST[e]['ostID']=e; return totalOST[e]});
     // TODO : sort and select head (50);
     barChart.totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['sum'] = Object.keys(totalOST[e]).reduce( (sum,key) => { var curr_sum = sum+totalOST[e][key][0]; totalOST[e][key][1]=curr_sum; return curr_sum},0); totalOST[e]['ostID']=e;  return totalOST[e]});
-    console.log(barChart.totalOST);
+    //console.log(barChart.totalOST);
 
     var displayOST = 10;
     // barChart.totalOST = barChart.totalOST.sort(function(a, b) { return b['sum'] - a['sum'];}).slice(0, displayOST);
     barChart.totalOST = barChart.totalOST.sort(function(a, b) { return b['sum'] - a['sum'];});
-
-    // barChart.totalOSTOrig = totalOST;
-    console.log(totalOST);
-    // console.log(barChart.totalOST);
 
     // barChart.initialize();
     barCreate(jobID, lists.length);
@@ -283,6 +281,45 @@ function barCreate(origJobID, lenOSTList) {
         });  
 }
 
+//hrchung
+function getJobUsage(jobID) {
+  let q_input = {jobID : jobID}
+  $.getJSON("/getJobInfo", q_input, function (json) {
+    //console.log(json);
+    var json = json[0];
+    /*
+writeBytesMPIIO: 0
+writeBytesPOSIX: 0
+writeBytesSTDIO: 7247.763271
+writeRateMPIIO: 0
+writeRatePOSIX: 1154.724061
+writeRateSTDIO: 136.332645497
+writeTimeMPIIO: 0
+writeTimePOSIX: -856.670062
+writeTimeSTDIO: 53.162346
+    */
+   var totalWriteBytes = json['writeBytesMPIIO'] + json['writeBytesPOSIX'] + json['writeBytesSTDIO'];
+   var totalWriteRate = json['writeRateMPIIO'] + json['writeRatePOSIX'] + json['writeRateSTDIO'];
+   var totalWriteTime = json['writeTimeMPIIO'] + json['writeTimePOSIX'] + json['writeTimeSTDIO'];
+   var bytes = {};
+   bytes['MPIIO']  = json['writeBytesMPIIO']*100/totalWriteBytes;
+   bytes['POSIX'] =  json['writeBytesPOSIX']*100/totalWriteBytes;
+   bytes['STDIO'] = json['writeBytesSTDIO']*100/totalWriteBytes;
+   var rates = {};
+   rates['MPIIO'] = json['writeRateMPIIO'] *100/totalWriteRate;
+   rates['POSIX'] = json['writeRatePOSIX']*100/totalWriteRate;
+   rates['STDIO'] = json['writeRateSTDIO']*100/totalWriteRate;
+   var times = {};
+   times['MPIIO'] = json['writeTimeMPIIO']*100/totalWriteTime;
+   times['POSIX'] = json['writeTimePOSIX']*100/totalWriteTime;
+   times['STDIO'] = json['writeTimeSTDIO']*100/totalWriteTime;
+   var data = [bytes, rates, times];
+   console.log(data);
+
+  });
+}
+
+
 function makeHeatmap(jobID) {
   let jid = {jobID : jobID}
   $.getJSON("/getHT", jid, function (json) { 
@@ -308,8 +345,8 @@ function makeHeatmap(jobID) {
       // lists.map(ost => totalOST.push({ostID: ost}));
       
     });
-    console.log(ostList);
-    console.log(totalOST);
+    //console.log(ostList);
+    //console.log(totalOST);
 
     intervalJobs = intervalJobs.filter(item => item['numOST'] > 1);
     totalOST.map(row => { row.size = 0; });
@@ -326,7 +363,7 @@ function makeHeatmap(jobID) {
       });
     });
 
-    console.log(totalOST);
+    //console.log(totalOST);
 
     let data = new Array();
 
@@ -336,7 +373,7 @@ function makeHeatmap(jobID) {
       data.push({ostID: row.ostID, xIndex: xIndex, yIndex: yIndex, size: row.size});
     });
     
-    console.log(data);
+    //console.log(data);
 
 
     // myGroups = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];

@@ -42,7 +42,7 @@ app.get('/getData', async (req, res, next) => {
 });
 
 app.get('/appendOptions', async (req, res, next) => {
-  console.log("getting data for app names for options")
+  //console.log("getting data for app names for options")
   let sql = "SELECT progName, COUNT(*) AS 'count' FROM More1GApp GROUP BY progName HAVING COUNT(*) > 80 ORDER BY COUNT(*) DESC;";
   db.all(sql, [], (err, rows) => {
     if (err) { throw err; }
@@ -58,7 +58,7 @@ app.get('/appendOptions', async (req, res, next) => {
 });
 
 app.get('/getMDS', async (req, res, next) => {
-  console.log("getting MDS information for selected jobID " + req.query.jobID)
+  //console.log("getting MDS information for selected jobID " + req.query.jobID)
   let sql = "SELECT startTime, endTime FROM More1GApp WHERE jobID == '"+req.query.jobID+"' GROUP BY jobID";
 
   db.all(sql, [], (err, rows) => {
@@ -110,6 +110,20 @@ app.get('/getIntervalJobs', async (req, res, next) => {
       throw err;
     }
     //console.log("[getIntervalJobs] "+rows.length)
+    res.json(rows);
+  });
+});
+
+//hrchung 
+app.get('/getJobInfo', async (req, res, next) => {
+  // TODO : change the range of filtering 
+  let sql = 'SELECT writeBytesPOSIX, writeBytesMPIIO, writeBytesSTDIO, writeTimePOSIX, writeTimeMPIIO, writeTimeSTDIO, writeRatePOSIX, writeRateMPIIO, writeRateSTDIO FROM More1GApp where jobID=='+req.query.jobID;
+
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      throw err;
+    }
+    //console.log("[getJobInfo] "+rows)
     res.json(rows);
   });
 });
