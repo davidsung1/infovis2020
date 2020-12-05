@@ -283,11 +283,22 @@ function barCreate(origJobID, lenOSTList) {
 
 //hrchung
 
-function radarCreate(data) {
-
+function radarInit(data) {
+//initialize 
   radar.radicalScale = d3.scaleLinear().domain([0, 100]).range([0, 180]);
+  ticks=[];
+  data.map(item=>Object.values(item).map(t=> ticks.push(t)));
+  TICK_MAX = Math.ceil(Math.max(...ticks));
+  EDGE = TICK_MAX +20;
   radar.ticks = [];
-  for(i=0; i<= 100; i+=20) radar.ticks.push(i);
+  for(i=0; i<EDGE; i+=20) radar.ticks.push(i);
+  radar.ticks.push(EDGE);
+  radar.line = d3.line().x(d => d.x).y(d => d.y);
+  //  radar.colors = ["darkorange", "gray", "navy"];
+  radar.colors = ["red", "green", "navy"];
+  radar.features = Object.keys(data[1]);
+
+  radar.svg.selectAll('*').remove();
   radar.ticks.forEach(t =>
     radar.svg.append("circle")
     .attr("cx", 180)
@@ -296,24 +307,26 @@ function radarCreate(data) {
     .attr("stroke", "lightgray")
     .attr("r", radar.radicalScale(t))
     );
+
   radar.ticks.forEach(t =>
     radar.svg.append("text")
       .attr("x", 200)
       .attr("y", 180 - radar.radicalScale(t))
+      .style("font-size","10px")
       .text(t.toString())
   );
-
+// initailize path
   function angleToCoordinate(angle, value){
     let x = Math.cos(angle) * radar.radicalScale(value);
     let y = Math.sin(angle) * radar.radicalScale(value);
     return {"x": 180 + x, "y": 180 - y};
   }
-  radar.features = Object.keys(data[0]);
+
   for (var i = 0; i < radar.features.length; i++) {
     let ft_name = radar.features[i];
     let angle = (Math.PI / 2) + (2 * Math.PI * i / radar.features.length);
-    let line_coordinate = angleToCoordinate(angle, 100);
-    let label_coordinate = angleToCoordinate(angle, 100.5);
+    let line_coordinate = angleToCoordinate(angle, EDGE);
+    let label_coordinate = angleToCoordinate(angle, EDGE);
 
     //draw axis line
     radar.svg.append("line")
@@ -330,10 +343,7 @@ function radarCreate(data) {
     .text(ft_name);
   } 
   
-  radar.line = d3.line()
-    .x(d => d.x)
-    .y(d => d.y);
-  radar.colors = ["darkorange", "gray", "navy"];
+ 
   function getPathCoordinates(data_point){
     let coordinates = [];
     for (var i = 0; i < radar.features.length; i++){
@@ -343,14 +353,15 @@ function radarCreate(data) {
     }
     return coordinates;
   }
+  /*
   for (var i = 0; i < data.length; i ++){
     let d = data[i];
     let color = radar.colors[i];
     let coordinates = getPathCoordinates(d);
-
-    //draw the path element
-    radar.svg.append("path")
+    radar.svg
     .datum(coordinates)
+    .enter()
+    .append("path")
     .attr("d",radar.line)
     .attr("stroke-width", 3)
     .attr("stroke", color)
@@ -358,6 +369,37 @@ function radarCreate(data) {
     .attr("stroke-opacity", 1)
     .attr("opacity", 0.5);
   } 
+  data.forEach((datum, index) => {
+    //console.log(datum, index)
+    radar.svg
+    .datum(getPathCoordinates(datum))
+    .append("path")
+    .attr("d",radar.line)
+    .attr("stroke-width", 3)
+    .attr("stroke", radar.colors[index])
+    //.attr("fill", color)
+    .attr("stroke-opacity", 1)
+    .attr("opacity", 0.5);
+  });
+*/
+  
+ 
+
+  data.forEach((datum, index) => {
+    //console.log(datum, index)
+    radar.svg
+    .datum(getPathCoordinates(datum))
+    .append("path")
+    .attr("class", "radar_unit")
+    .attr("d",radar.line)
+    .attr("stroke-width", 2)
+    .attr("stroke", radar.colors[index])
+    .attr("fill", radar.colors[index])
+    .attr("stroke-opacity", 1)
+    .attr("opacity", 0.5);
+  });
+  
+  
 }
 
 
@@ -385,7 +427,7 @@ function getJobUsage(jobID) {
    times['STDIO'] = json['writeTimeSTDIO']*100/totalWriteTime;
    var data = [bytes, rates, times];
    //console.log(data);
-   radarCreate(data);
+   radarInit(data);
   }); // <- json
 }
 

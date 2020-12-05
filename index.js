@@ -1,5 +1,6 @@
 var express = require('express');
 var Promise = require("bluebird");
+const { OPEN_READWRITE } = require('sqlite3');
 
 
 const sqlite3 = require('sqlite3').verbose();
