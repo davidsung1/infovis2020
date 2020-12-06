@@ -287,8 +287,9 @@ function radarInit(data) {
 //initialize 
   ticks=[];
   data.map(item=>Object.values(item).map(t=> ticks.push(t)));
-  TICK_MAX = Math.min(Math.ceil(Math.max(...ticks)), 100);
-  EDGE = TICK_MAX+ 10;
+  //TICK_MAX = Math.min(Math.ceil(Math.max(...ticks)), 100);
+  TICK_MAX = 100
+  EDGE = 110;
   radar.ticks = [];
   for(i=0; i<=TICK_MAX; i+=20) radar.ticks.push(i);
   radar.ticks.push(TICK_MAX);
@@ -296,7 +297,7 @@ function radarInit(data) {
   radar.colors = ["red", "green", "navy"];
   radar.features = Object.keys(data[1]);
   radar.radius = 150;
-  radar.radicalScale = d3.scaleLinear().domain([0, EDGE]).range([0, radar.radius]);
+  radar.radicalScale = d3.scaleLinear().domain([0, TICK_MAX]).range([0, radar.radius]);
   radar.middle = 50;
   radar.line = d3.line().x(d => d.x + radar.middle).y(d => d.y + radar.middle);
 
@@ -369,8 +370,8 @@ function radarInit(data) {
   });
 
   radar.legend = radar.svg.append("g").attr("id", "radar.legend");
-  radar.legend.x = 300 ;
-  radar.legend.y = 30;
+  radar.legend.x = 300;
+  radar.legend.y = 20;
   radar.legend.append("rect")
                           .attr("width", 100)
                           .attr("height", 80)
@@ -401,6 +402,7 @@ function radarInit(data) {
           .style("fill",(d, i) => radar.colors[i]);
           
   //move chart to center
+  radar.legend.selectAll('*').attr('transform', "translate(50, 0)")
 }
 
 
