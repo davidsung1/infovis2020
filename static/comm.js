@@ -285,24 +285,26 @@ function barCreate(origJobID, lenOSTList) {
 
 function radarInit(data) {
 //initialize 
-  radar.radicalScale = d3.scaleLinear().domain([0, 100]).range([0, 180]);
   ticks=[];
   data.map(item=>Object.values(item).map(t=> ticks.push(t)));
-  TICK_MAX = Math.ceil(Math.max(...ticks));
-  EDGE = TICK_MAX +20;
+  TICK_MAX = Math.min(Math.ceil(Math.max(...ticks)), 100);
+  EDGE = TICK_MAX+ 10;
   radar.ticks = [];
-  for(i=0; i<EDGE; i+=20) radar.ticks.push(i);
-  radar.ticks.push(EDGE);
-  radar.line = d3.line().x(d => d.x).y(d => d.y);
+  for(i=0; i<=TICK_MAX; i+=20) radar.ticks.push(i);
+  radar.ticks.push(TICK_MAX);
   //  radar.colors = ["darkorange", "gray", "navy"];
   radar.colors = ["red", "green", "navy"];
   radar.features = Object.keys(data[1]);
+  radar.radius = 150;
+  radar.radicalScale = d3.scaleLinear().domain([0, EDGE]).range([0, radar.radius]);
+  radar.middle = 50;
+  radar.line = d3.line().x(d => d.x + radar.middle).y(d => d.y + radar.middle);
 
   radar.svg.selectAll('*').remove();
   radar.ticks.forEach(t =>
     radar.svg.append("circle")
-    .attr("cx", 180)
-    .attr("cy", 180)
+    .attr("cx", radar.radius + radar.middle)
+    .attr("cy", radar.radius + radar.middle)
     .attr("fill", "none")
     .attr("stroke", "lightgray")
     .attr("r", radar.radicalScale(t))
@@ -310,8 +312,8 @@ function radarInit(data) {
 
   radar.ticks.forEach(t =>
     radar.svg.append("text")
-      .attr("x", 200)
-      .attr("y", 180 - radar.radicalScale(t))
+      .attr("x", radar.radius  + radar.middle +10)
+      .attr("y", radar.radius  + radar.middle - radar.radicalScale(t))
       .style("font-size","10px")
       .text(t.toString())
   );
@@ -319,31 +321,30 @@ function radarInit(data) {
   function angleToCoordinate(angle, value){
     let x = Math.cos(angle) * radar.radicalScale(value);
     let y = Math.sin(angle) * radar.radicalScale(value);
-    return {"x": 180 + x, "y": 180 - y};
+    return {"x": radar.radius + x, "y": radar.radius - y};
   }
 
   for (var i = 0; i < radar.features.length; i++) {
     let ft_name = radar.features[i];
     let angle = (Math.PI / 2) + (2 * Math.PI * i / radar.features.length);
     let line_coordinate = angleToCoordinate(angle, EDGE);
-    let label_coordinate = angleToCoordinate(angle, EDGE);
+    let label_coordinate = angleToCoordinate(angle, EDGE+5);
 
     //draw axis line
     radar.svg.append("line")
-    .attr("x1", 180)
-    .attr("y1", 180)
-    .attr("x2", line_coordinate.x)
-    .attr("y2", line_coordinate.y)
-    .attr("stroke","black");
+    .attr("x1", radar.radius+ radar.middle)
+    .attr("y1", radar.radius+ radar.middle)
+    .attr("x2", line_coordinate.x+ radar.middle)
+    .attr("y2", line_coordinate.y+ radar.middle)
+    .attr("stroke", "lightgray");
 
     //draw axis label
     radar.svg.append("text")
-    .attr("x", label_coordinate.x)
-    .attr("y", label_coordinate.y)
+    .attr("x", label_coordinate.x + radar.middle - 10)
+    .attr("y", label_coordinate.y+ radar.middle)
     .text(ft_name);
   } 
   
- 
   function getPathCoordinates(data_point){
     let coordinates = [];
     for (var i = 0; i < radar.features.length; i++){
@@ -353,44 +354,12 @@ function radarInit(data) {
     }
     return coordinates;
   }
-  /*
-  for (var i = 0; i < data.length; i ++){
-    let d = data[i];
-    let color = radar.colors[i];
-    let coordinates = getPathCoordinates(d);
-    radar.svg
-    .datum(coordinates)
-    .enter()
-    .append("path")
-    .attr("d",radar.line)
-    .attr("stroke-width", 3)
-    .attr("stroke", color)
-    .attr("fill", color)
-    .attr("stroke-opacity", 1)
-    .attr("opacity", 0.5);
-  } 
-  data.forEach((datum, index) => {
-    //console.log(datum, index)
-    radar.svg
-    .datum(getPathCoordinates(datum))
-    .append("path")
-    .attr("d",radar.line)
-    .attr("stroke-width", 3)
-    .attr("stroke", radar.colors[index])
-    //.attr("fill", color)
-    .attr("stroke-opacity", 1)
-    .attr("opacity", 0.5);
-  });
-*/
-  
- 
 
   data.forEach((datum, index) => {
-    //console.log(datum, index)
     radar.svg
     .datum(getPathCoordinates(datum))
     .append("path")
-    .attr("class", "radar_unit")
+    .attr("class", "radar")
     .attr("d",radar.line)
     .attr("stroke-width", 2)
     .attr("stroke", radar.colors[index])
@@ -398,8 +367,40 @@ function radarInit(data) {
     .attr("stroke-opacity", 1)
     .attr("opacity", 0.5);
   });
+
+  radar.legend = radar.svg.append("g").attr("id", "radar.legend");
+  radar.legend.x = 300 ;
+  radar.legend.y = 30;
+  radar.legend.append("rect")
+                          .attr("width", 100)
+                          .attr("height", 80)
+                          .attr("x", radar.legend.x)
+                          .attr("y", radar.legend.y)
+                          .attr("fill", "#eeeeee")
+                          .attr('opacity', 0.5);
+
   
-  
+  radar.legend 
+        .selectAll("text")
+        .data(radar.usage)
+        .join("text")
+          .attr("y", function(d, i) { return ((i+1)*20) + radar.legend.y; })
+          .attr("x", radar.legend.x + 30)
+          .attr("font-size", '9px')
+          .attr("text-anchor", "left")
+          .style("alignment-baseline", "middle")
+          .text(d => d);
+
+  radar.legend 
+        .selectAll("circle")
+        .data(radar.usage)
+        .join("circle")
+          .attr("cx", radar.legend.x + 10)
+          .attr("cy", function(d, i) { return ((i+1)*20) + radar.legend.y; })
+          .attr("r", 3)
+          .style("fill",(d, i) => radar.colors[i]);
+          
+  //move chart to center
 }
 
 
@@ -426,7 +427,7 @@ function getJobUsage(jobID) {
    times['POSIX'] = json['writeTimePOSIX']*100/totalWriteTime;
    times['STDIO'] = json['writeTimeSTDIO']*100/totalWriteTime;
    var data = [bytes, rates, times];
-   //console.log(data);
+   radar.usage=['write bytes #', 'write rate #', 'write time #']
    radarInit(data);
   }); // <- json
 }

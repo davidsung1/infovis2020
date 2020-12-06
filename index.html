@@ -321,7 +321,7 @@
 
       //hrchung
       let radar = {};
-      radar.width = 450 - margin.left - margin.right;
+      radar.width = 500 - margin.left - margin.right;
       radar.height = 450 - margin.top - margin.bottom;
 
       radar.svg = d3.select("#radarBody") 
@@ -329,19 +329,6 @@
                     .attr("width", radar.width + margin.left + margin.right)
                     .attr("height", radar.height + margin.top + margin.bottom);
       
-      let RDxAxis, RDyAxis;
-      let RDxAxisVar = radar.svg.append('g').attr('id', 'RDxAxis');
-      let RDyAxisVar = radar.svg.append('g').attr('id', 'RDyAxis');
-      radar.legend = radar.svg.append("g")
-                        .attr("class", "legend")
-                        .attr("id", "radarLegend")
-                        .attr("transform", `translate(200, 10)`)
-                        .append("rect")
-                          .attr("width", 100)
-                          .attr("height", 50)
-                          .attr("fill", "#eeeeee")
-                          .attr("fill-opacity", 0);
-
 
       // getMDSData(6477575); //this one
       getMDSData(7268416);
