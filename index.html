@@ -25,6 +25,7 @@
       }
 
       table {
+        margin-top: 0;
         /* font-family: arial, sans-serif; */
         border-collapse: collapse;
         width: 100%;
@@ -35,19 +36,36 @@
         padding: 8px;
       }
 
+      th {
+        background: white;
+        border: 1px solid #dddddd;
+        position: sticky;
+        top: 0;
+      }
+
       .tableClicked {
         background-color: #dddddd;
       }
 
+      .circleClicked {
+        stroke-width: 2;
+        fill: red;
+      }
+
       .appinfo {
-        height: 250px;
+        /* height: 250px; */
+        height: 410px;
       }
 
       .scatter {
-        height: 350px;
+        height: 410px;
       }
 
       .cardOfMDS {
+        height: 350px;
+      }
+
+      .radar {
         height: 350px;
       }
 
@@ -56,7 +74,7 @@
       }
 
       .cardofHeatmap {
-        height: 500px;
+        height: 400px;
       }
 
       #OSTGraph {
@@ -115,13 +133,20 @@
           <div class="container-fluid">
             <div class="row topInfoBar">
               <p>App Name: <select name="select1" id="select1"><option value="default">Select..</option></select></p>
-              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#historyModal" id="historyButton">
-                History
-              </button>
             </div>
             <hr>
             <div class="row">
-              <div class="col-xl-12 center">
+              <div class="col-xl-4"> 
+                <div class="card shadow mb-4 scatter">
+                  <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">Throughput vs Total Written Bytes</h6>
+                  </div>
+                  <div class="card-body" id="scatterPlot">
+                    <!-- <hr> -->
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-8">
                 <div class="card shadow mb-4 appinfo">
                   <div class="card-header">
                     <h6 class="m-0 font-weight-bold text-primary">Application I/O Information</h6>
@@ -144,23 +169,33 @@
                 </div>
               </div>
             </div>
-            <div class="row">
-              <div class="col-xl-3"> <!-- part for info list and scatter plot -->
+            <div class="row"> <!-- part for info list and scatter plot -->
+              <!-- <div class="col-xl-3"> 
                 <div class="card shadow mb-4 scatter">
                   <div class="card-header">
                     <h6 class="m-0 font-weight-bold text-primary">Throughput vs Bytes Total</h6>
                   </div>
-                  <div class="card-body">
+                  <div class="card-body" id="scatterPlot">
+
+                  </div>
+                </div>
+              </div> -->
+              <div class="col-xl-9"> <!-- part for OST and MDS graphs -->
+                <div class="card shadow mb-4 cardOfMDS">
+                  <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">MDS OPS & CPU</h6>
+                  </div>
+                  <div class="card-body" id="MDSGraph">
                     <!-- <hr> -->
                   </div>
                 </div>
               </div>
-              <div class="col-xl-9"> <!-- part for OST and MDS graphs -->
-                <div class="card shadow mb-4 cardOfMDS">
+              <div class="col-xl-3"> <!-- part for OST and MDS graphs -->
+                <div class="card shadow mb-4 radar">
                   <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-primary">MDS</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">POSIX vs MPI I/O vs STDIO</h6>
                   </div>
-                  <div class="card-body" id="MDSGraph">
+                  <div class="card-body" id="radarBody">
                     <!-- <hr> -->
                   </div>
                 </div>
@@ -168,22 +203,20 @@
             </div>
             <hr>
             <div class="row">
-              <div class="col-xl-12">
+              <div class="col-xl-8">
                 <div class="card shadow mb-4 cardofOST">
                   <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-primary">OST</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">OST Usage</h6>
                   </div>
                   <div class="card-body" id="OSTGraph">
 
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="row">
-              <div class="col-xl-5">
+              <div class="col-xl-4">
                 <div class="card shadow mb-4 cardofHeatmap">
                   <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-primary">HeatMap</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Overall OST HeatMap</h6>
                   </div>
                   <div class="card-body" id="heatMapBody">
                     <!-- <hr> -->
@@ -194,33 +227,6 @@
           </div> <!-- end of content fluid -->
         </div> <!-- content (actualy content here) -->
       </div> <!-- content wrapper -->
-      <div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLabel">History</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body" id="historyModalBody">
-              <table id="historyTable">
-                <tr id="historyHead">
-                  <th></th>
-                  <th>App Name</th>
-                  <th>Job ID</th>
-                  <th>Start</th>
-                  <th>End</th>
-                </tr>
-              </table>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" id="clearHistory">Clear history</button>
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-          </div>
-        </div>
-      </div>
     
   </body>
 
@@ -248,15 +254,8 @@
                           .attr('id', "MDSyAxisR");
 
       let MDSxAxis, MDSyAxisL, MDSyAxisR;
-      let legendEnter = MDSsvg.append("g")
-                        .attr("class", "legend")
-                        .attr("id", "MDSLegend")
-                        .attr("transform", `translate(970, 10)`)
-                        .append("rect")
-                          .attr("width", 100)
-                          .attr("height", 50)
-                          .attr("fill", "#eeeeee")
-                          .attr("fill-opacity", 0.5);
+      // let legendEnter;
+
       let MDSlines;
       let MDSYaxisLTitle = MDSsvg
                             .append('g')
@@ -266,7 +265,7 @@
                             .append('g')
                             .attr('id', 'MDSYaxisRTitle');
 
-      //hrchung
+      //bar chart
       let margin = {top: 20, right: 20, bottom:30, left: 20};
       let barChart = {};
       barChart.width = 1900;
@@ -275,7 +274,7 @@
                             .append('svg')
                             .attr('id', 'ostbar')
                             .attr('width', 2000)
-                            .attr('height', 300);
+                            .attr('height', 320);
       barChart.xaxis = barChart.svg
                         .append('g')
                         .attr('id', "OSTxAxis");
@@ -288,94 +287,88 @@
                         .attr('height', barChart.height)
                         .attr('transfrom', "translate(0, 0)");
 
+      barChart.xAxisTitle = barChart.svg
+                            .append('g')
+                            .attr('id', 'barXaxisTitle');
+
+      barChart.yAxisTitle = barChart.svg
+                            .append('g')
+                            .attr('id', 'barYaxisTitle');
+
 
       //heatmap
       let heatMap = {};
-      heatMap.width = 450 - margin.left - margin.right,
-      heatMap.height = 450 - margin.top - margin.bottom;
+      heatMap.width = 350 - margin.left - margin.right,
+      heatMap.height = 350 - margin.top - margin.bottom;
 
       heatMap.svg = d3.select("#heatMapBody")
                     .append("svg")
-                    .attr("width", heatMap.width + margin.left + margin.right)
+                    .attr("width", heatMap.width + margin.left + margin.right + 200)
                     .attr("height", heatMap.height + margin.top + margin.bottom)
                       // .append("g")
                       //   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-      let myGroups = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
-      let myVars = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10"];
-
       let HTxAxis, HTyAxis;
       let HTxAxisVar = heatMap.svg.append('g').attr('id', 'HTxAxis');
       let HTyAxisVar = heatMap.svg.append('g').attr('id', 'HTyAxis');
+      let colorBottom = heatMap.svg.append('g').attr('id', 'colorBottom')
+
+      //scatter plot
+      let scatter = {};
+      scatter.width = 450 - margin.left - margin.right;
+      scatter.height = 350 - margin.top - margin.bottom;
+
+      scatter.svg = d3.select('#scatterPlot')
+                    .append('svg')
+                    .attr('id', 'scatterSvg')
+                    .attr('width', 500)
+                    .attr('height', 500);
+
+      scatter.xAxisVar = scatter.svg
+                        .append('g')
+                        .attr('id', 'SPxAxis');
+      scatter.yAxisVar = scatter.svg
+                        .append('g')
+                        .attr('id', 'SPyAxis');
+
+      scatter.xAxisTitle = scatter.svg
+                            .append('g')
+                            .attr('id', 'scatterXaxisTitle');
+
+      scatter.yAxisTitle = scatter.svg
+                            .append('g')
+                            .attr('id', 'scatterYaxisTitle');
+      //scatter.xAxisTitle
+      //scatter.yAxisTitle
+
+      //radar chart
+      let radar = {};
+      radar.width = 450 - margin.left - margin.right;
+      radar.height = 400 - margin.top - margin.bottom;
+
+      radar.svg = d3.select("#radarBody") 
+                    .append("svg")
+                    .attr("width", radar.width + margin.left + margin.right)
+                    .attr("height", radar.height + margin.top + margin.bottom);
+
         
 
       
-      // getMDSData(6477575); //this one
-      getMDSData(7268416);
+
       // $("#btnbaby").click(function () {
       //   getMDSData(7583469);
       //   d3.select("#MDSGraph").classed("blur", true);
       //   d3.select(".cardOfMDS").append("p").text("NOT VALID").classed("warning", true);
       //   // d3.select(".cardOfMDS").append("p").text("Click dot in scatter plot").classed("warning", true);
-      // });
-
-      // function barCreate() {
-      //   barChart.ostList = Object.values(barChart.totalOST).map(d=>d['ostID']);
-      //   // console.log(barChart.ostlist);
-      //   barChart.xScale = d3.scaleBand().domain(barChart.ostList).range([50, barChart.width+50]).padding(0.05);
-      //   barChart.yMAX = d3.max(barChart.totalOST.map(d => {return d.sum}));
-      //   barChart.yScale = d3.scaleLinear().domain([0, barChart.yMAX]).range([barChart.height,10]);    
-
-      //   barChart.xaxis.attr('transform', "translate(0, "+ barChart.height +")").call(d3.axisBottom(barChart.xScale));
-      //   barChart.yaxis.attr('transform', "translate(50, 0)").call(d3.axisLeft(barChart.yScale));
-      //   barChart.rects = barChart.plot.selectAll('g').data(barChart.totalOST, d=>d['ostID']).join('g')
-      //         .attr("class", d=>d['team'])
-      //         .each(function(d, i) { 
-      //             d3.select(this).selectAll('rect').data(k => { var keys = Object.keys(k); return keys.map(eachKey => [eachKey, k[eachKey]])} , tuple => tuple[1])
-      //             .join('rect')
-      //               .attr('fill', (sub_d, sub_i) => "rgb("+Math.floor(Math.random()*256)+"," +Math.floor(Math.random()*256)+","+ Math.floor(Math.random()*256)+")")
-      //               .attr("width", barChart.xScale.bandwidth()-40)
-      //               .attr("height", (sub_d, sub_i) =>{ if(sub_d[0]!='ostID' && sub_d[0] !='sum') { return barChart.height - barChart.yScale(sub_d[1][0]);} else 0;})
-      //               .attr("x", margin.left+barChart.xScale(d.ostID))
-      //               .attr("y", (sub_d, sub_i) => {if(sub_d[0]!='ostID' && sub_d[0] !='sum') return barChart.yScale(sub_d[1][1])})
-      //               .attr("class", sub_d=>d.ostID)
-      //               //.attr("text", sub_d => {if(sub_d[0]!='ostID' && sub_d[0] !='sum') return sub_d[0]+"/"+sub_d[1]})
-      //               //.on('mouseover', (event, sub_d) => highlight(d.ostID))
-      //               //.on('mouseout', (event, sub_d) => unhighlight(d.ostID))
-      //         });  
-      // }
-
-      // function getIntervalJobs(progName, jobID) {
-      //    let q_input = {progName: progName, jobID : jobID}
-      //    $.getJSON("/getIntervalJobs", q_input, function (json) {
-      //       var intervalJobs = json;
-      //       //console.log(intervalJobs);
-      //       var totalOST = {};
-      //       intervalJobs.map(row=> {if(row['jobID']==q_input.jobID) {var lists = row['ostlist'].split(" "); lists.map(ost => totalOST[ost] = {})} });
-      //       intervalJobs.filter(item => item['numOST'] > 1);
-      //       intervalJobs.map(row => {var lists = row['ostlist'].split(" ");  lists.map(ost => { if (ost in totalOST) totalOST[ost][row['jobID']] = [row['writeBytesTotal']/row['numOST'], -1]; })  });
-      //       //barChart.totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['sum'] = Object.values(totalOST[e]).reduce((a, b) => a + b, 0); totalOST[e]['ostID']=e; return totalOST[e]});
-      //       // TODO : sort and select head (50);
-      //       barChart.totalOST = Object.getOwnPropertyNames(totalOST).map(function(e) { totalOST[e]['sum'] = Object.keys(totalOST[e]).reduce( (sum,key) => { var curr_sum = sum+totalOST[e][key][0]; totalOST[e][key][1]=curr_sum; return curr_sum},0); totalOST[e]['ostID']=e;  return totalOST[e]});
-
-      //       var displayOST = 10;
-      //       barChart.totalOST = barChart.totalOST.sort(function(a, b) { return b['sum'] - a['sum'];}).slice(0, displayOST);
-      //       console.log(totalOST);
-      //       // barChart.initialize();
-      //       barCreate();
-      //   });
-      // };
+      // });  
 
       // getIntervalJobs("pw.x", 7408783);
       // getIntervalJobs(7408783);//original use this
-      getIntervalJobs(7268416);
-      // $("#btnbaby").click(function () {
-      //   getIntervalJobs(7583469)
-      //   // d3.select("#MDSGraph").classed("blur", true);
-      //   // d3.select(".cardOfMDS").append("p").text("NOT VALID").classed("warning", true);
-      //   // d3.select(".cardOfMDS").append("p").text("Click dot in scatter plot").classed("warning", true);
-      // });    
-      makeHeatmap(7268416);
+      // getIntervalJobs(9844433);
+      // getMDSData(6477575); //this one
+      // getMDSData(9844433);  
+      // makeHeatmap(9844433);
+      // makeScatter("gene_cori");
 
 
   </script>

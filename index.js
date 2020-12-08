@@ -166,6 +166,30 @@ app.get('/getHT', async (req, res, next) => {
   });
 });
 
+app.get('/getScatter', async (req, res, next) => {
+  let sql = 'SELECT progName, jobID, numOST, writeRateTotal, writeBytesTotal FROM More1GApp where progName == "'+req.query.progName+'" group by jobID';
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      throw err;
+    }
+
+    res.json(rows);
+  });
+});
+
+app.get('/getJobInfo', async (req, res, next) => {
+  // TODO : change the range of filtering 
+  let sql = 'SELECT writeBytesPOSIX, writeBytesMPIIO, writeBytesSTDIO, writeTimePOSIX, writeTimeMPIIO, writeTimeSTDIO, writeRatePOSIX, writeRateMPIIO, writeRateSTDIO FROM More1GApp where jobID=='+req.query.jobID;
+
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      throw err;
+    }
+    //console.log("[getJobInfo] "+rows)
+    res.json(rows);
+  });
+});
+
 function changeYear(st) {
   st = String(st);
   let st1, st2, newChar1, newChar2, newst;
