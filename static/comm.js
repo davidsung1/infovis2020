@@ -759,10 +759,16 @@ function radarInit(data) {
       .attr("stroke", "lightgray");
   
       //draw axis label
-      radar.svg.append("text")
-      .attr("x", label_coordinate.x + radar.middle - 10)
-      .attr("y", label_coordinate.y+ radar.middle)
-      .text(ft_name);
+      if (ft_name == "POSIX") 
+        radar.svg.append("text")
+        .attr("x", label_coordinate.x + radar.middle - 30)
+        .attr("y", label_coordinate.y+ radar.middle)
+        .text(ft_name);
+      else
+        radar.svg.append("text")
+        .attr("x", label_coordinate.x + radar.middle - 10)
+        .attr("y", label_coordinate.y+ radar.middle)
+        .text(ft_name);
     } 
     
     function getPathCoordinates(data_point){
