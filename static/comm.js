@@ -298,12 +298,9 @@ function getIntervalJobs(jobID) {
     var displayOST = 10;
     // barChart.totalOST = barChart.totalOST.sort(function(a, b) { return b['sum'] - a['sum'];}).slice(0, displayOST);
     barChart.totalOST = barChart.totalOST.sort(function(a, b) { return b['sum'] - a['sum'];});
-
-    // barChart.totalOSTOrig = totalOST;
-    // console.log(totalOST);
-    // console.log(barChart.totalOST);
-
-    // barChart.initialize();
+    barChart.jobIDs = [];
+    intervalJobs.map(row=> barChart.jobIDs.push(row['jobID']));
+    barChart.jobIDs = [...new Set(barChart.jobIDs)];
     barCreate(jobID, lists.length);
  });
 };
@@ -317,8 +314,14 @@ function barCreate(origJobID, lenOSTList) {
   // console.log(barChart.ostlist);
   barChart.xScale = d3.scaleBand().domain(barChart.ostList).range([50, barChart.width+50]).padding(0.05);
   barChart.yMAX = d3.max(barChart.totalOST.map(d => {return d.sum}));
-  barChart.yScale = d3.scaleLinear().domain([0, barChart.yMAX]).range([barChart.height,10]);    
-
+  barChart.yScale = d3.scaleLinear().domain([0, barChart.yMAX]).range([barChart.height,10]);
+  barChart.colorchip = {};
+  barChart.jobIDs.map ((d, i) => { 
+        if (!(d in barChart.colorchip)) {
+          barChart.colorchip[d] = [Math.floor(Math.random()*256), Math.floor(Math.random()*256), Math.floor(Math.random()*256)];    
+      }});
+  console.log(barChart.colorchip);
+  
   barChart.xaxis.attr('transform', "translate(0, "+ barChart.height +")").call(d3.axisBottom(barChart.xScale));
   barChart.yaxis.attr('transform', "translate(50, 0)").call(d3.axisLeft(barChart.yScale));
   barChart.rects = barChart.plot.selectAll('g').data(barChart.totalOST, d=>d['ostID']).join('g')
@@ -326,7 +329,7 @@ function barCreate(origJobID, lenOSTList) {
         .each(function(d, i) { 
             d3.select(this).selectAll('rect').data(k => { var keys = Object.keys(k); return keys.map(eachKey => [eachKey, k[eachKey]])} , tuple => tuple[1])
             .join('rect')
-              .attr('fill', (sub_d, sub_i) => "rgb("+Math.floor(Math.random()*256)+"," +Math.floor(Math.random()*256)+","+ Math.floor(Math.random()*256)+")")
+              .attr('fill', (sub_d, sub_i) => {if(sub_d[0]!='ostID' && sub_d[0] !='sum') { var c = barChart.colorchip[parseInt(sub_d)]; return "rgb("+c[0]+"," + c[1]+","+ c[2]+")"}})
               .attr("width", barChart.xScale.bandwidth()-40)
               .attr("height", (sub_d, sub_i) =>{ if(sub_d[0]!='ostID' && sub_d[0] !='sum') { return barChart.height - barChart.yScale(sub_d[1][0]);} else 0;})
               .attr("x", margin.left+barChart.xScale(d.ostID))
