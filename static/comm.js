@@ -320,7 +320,14 @@ function barCreate(origJobID, lenOSTList) {
         if (!(d in barChart.colorchip)) {
           barChart.colorchip[d] = [Math.floor(Math.random()*256), Math.floor(Math.random()*256), Math.floor(Math.random()*256)];    
       }});
-  console.log(barChart.colorchip);
+  barChart.highlight  = function (team) {
+    console.log(team.toString());
+        barChart.svg.selectAll('rect').select("."+team.toString()).attr('stroke', 'white').attr('stroke-width', "3");
+    };
+  
+  barChart.unhighlight  = function (team) {
+        barChart.svg.selectAll('rect').select("."+team.toString()).attr('stroke',  null).attr('stroke-width', null);
+      };
   
   barChart.xaxis.attr('transform', "translate(0, "+ barChart.height +")").call(d3.axisBottom(barChart.xScale));
   barChart.yaxis.attr('transform', "translate(50, 0)").call(d3.axisLeft(barChart.yScale));
@@ -329,15 +336,15 @@ function barCreate(origJobID, lenOSTList) {
         .each(function(d, i) { 
             d3.select(this).selectAll('rect').data(k => { var keys = Object.keys(k); return keys.map(eachKey => [eachKey, k[eachKey]])} , tuple => tuple[1])
             .join('rect')
-              .attr('fill', (sub_d, sub_i) => {if(sub_d[0]!='ostID' && sub_d[0] !='sum') { var c = barChart.colorchip[parseInt(sub_d)]; return "rgb("+c[0]+"," + c[1]+","+ c[2]+")"}})
+              .attr('fill', (sub_d, sub_i) => {if(sub_d[0]!='ostID' && sub_d[0] !='sum') { var c = barChart.colorchip[parseInt(sub_d[0])]; return "rgb("+c[0]+"," + c[1]+","+ c[2]+")"}})
               .attr("width", barChart.xScale.bandwidth()-40)
               .attr("height", (sub_d, sub_i) =>{ if(sub_d[0]!='ostID' && sub_d[0] !='sum') { return barChart.height - barChart.yScale(sub_d[1][0]);} else 0;})
               .attr("x", margin.left+barChart.xScale(d.ostID))
               .attr("y", (sub_d, sub_i) => {if(sub_d[0]!='ostID' && sub_d[0] !='sum') return barChart.yScale(sub_d[1][1])})
-              .attr("class", sub_d=>d.ostID)
+              .attr("class", sub_d=>sub_d[0])
               //.attr("text", sub_d => {if(sub_d[0]!='ostID' && sub_d[0] !='sum') return sub_d[0]+"/"+sub_d[1]})
-              //.on('mouseover', (event, sub_d) => highlight(d.ostID))
-              //.on('mouseout', (event, sub_d) => unhighlight(d.ostID))
+              //.on('mouseover', (event, sub_d) => {barChart.highlight(event[0])})
+              //.on('mouseout', (event, sub_d) =>  {barChart.unhighlight(event[0])})
         });  
 
 
